@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          New-Item -ItemType Directory -Force dist | Out-Null
+          foreach ($rid in 'win-x64', 'win-arm64') {
+            $out = "publish/$rid"
+            dotnet publish src/Wcm -c Release -r $rid --self-contained `
+              -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:Version=$version -o $out
+            Copy-Item README.md, LICENSE $out
+            Compress-Archive -Path "$out/wcm.exe", "$out/README.md", "$out/LICENSE" `
+              -DestinationPath "dist/wcm-$version-$rid.zip"
+          }
+          Get-ChildItem dist/*.zip | ForEach-Object {
+            "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)"
+          } | Set-Content dist/SHA256SUMS.txt
+
+      - name: Create release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          # Tags like v1.2.0-beta.1 become pre-releases
+          $flags = @('--title', $tag, '--generate-notes', '--verify-tag')
+          if ($tag -match '-') { $flags += '--prerelease' }
+          gh release create $tag (Get-ChildItem dist/*).FullName @flags

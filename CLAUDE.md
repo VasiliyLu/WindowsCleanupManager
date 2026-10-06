@@ -20,6 +20,8 @@ dotnet run --project src/Wcm -- rules                          # list active rul
 dotnet publish src/Wcm -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
 ```
 
+CI (`.github/workflows/ci.yml`) builds and tests on `windows-latest` for every push to `main` and every PR. Pushing a `v*.*.*` tag runs `release.yml`: it reuses CI, then publishes compressed single-file exes for win-x64 and win-arm64 (the version comes from the tag) and creates a GitHub Release with zips and `SHA256SUMS.txt`.
+
 Use `scan --no-ai` for safe manual checks. Without `--no-ai` and with `OPENROUTER_API_KEY` set, the scan makes paid API calls; it asks first unless you pass `-y`.
 
 ## Architecture

@@ -61,6 +61,18 @@ Deletion log: `%APPDATA%\Wcm\deletions.log`.
 Docker: space is freed inside `docker_data.vhdx`, but the file itself may not shrink —
 run `wsl --shutdown`, then `Optimize-VHD` / `diskpart compact vdisk`.
 
+## Releases
+
+Prebuilt `wcm.exe` (win-x64, win-arm64) is on the [Releases](../../releases) page. To cut a release, push a version tag:
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions runs the tests, publishes self-contained single-file exes and creates the release with notes generated from commits.
+Tags with a suffix (`v1.1.0-beta.1`) become pre-releases.
+
 ## License
 
 [MIT](LICENSE)
