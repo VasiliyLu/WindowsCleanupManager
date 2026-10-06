@@ -1,10 +1,32 @@
 # Windows Cleanup Manager (`wcm`)
 
-An ncdu-like TUI for semi-automatic disk cleanup on Windows.
-It scans a drive with multiple threads and suggests what to delete (by rules or by the [Jev](https://openrouter.ai/labs/jev) model).
-You check items, confirm, and it deletes them to the Recycle Bin or permanently. Supports files, folders, Docker images, volumes and build cache.
+[![CI](https://github.com/VasiliyLu/WindowsCleanupManager/actions/workflows/ci.yml/badge.svg)](https://github.com/VasiliyLu/WindowsCleanupManager/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/VasiliyLu/WindowsCleanupManager)](https://github.com/VasiliyLu/WindowsCleanupManager/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/VasiliyLu/WindowsCleanupManager/total)](https://github.com/VasiliyLu/WindowsCleanupManager/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## Running
+**Find out where your disk space went, and get it back safely.** An ncdu-like terminal UI for Windows
+that scans a drive in seconds and tells you what is safe to delete: stale `node_modules`, `bin`/`obj`, package caches,
+Windows Update leftovers, crash dumps, unused Docker images. You review, check, confirm.
+
+## Features
+
+- **Fast parallel scan** of a whole drive, with an ncdu-style tree browser.
+- **54 built-in rules** for temp files, browser and GPU caches, build outputs (.NET, Node, Rust, Maven, Gradle, Python, Unity…) and package caches (NuGet, npm, pnpm, pip, Cargo, Go…).
+  Build output is only suggested when the project marker is next to it and the project hasn't changed in a while.
+- **Safe by design**: Windows, Program Files, your documents, `.git` folders and VM disks are protected and re-checked right before anything is deleted.
+  Recycle Bin by default, and every deletion is logged.
+- **Optional AI classification** of large unknown folders with the [Jev](https://openrouter.ai/labs/jev) model. It has a hard per-scan budget (default $0.05), asks before sending anything, anonymizes your profile path and caches answers.
+- **Docker cleanup**: unused images, dangling volumes, BuildKit cache.
+- **Your own rules**: press `R` on any suggestion to make it permanent, or `N` to never see it again.
+- **Headless mode** (`wcm scan C:\ --json out.json`) for scripting; it never deletes.
+
+## Install
+
+Download `wcm-<version>-win-x64.zip` (or `win-arm64`) from the [latest release](https://github.com/VasiliyLu/WindowsCleanupManager/releases/latest),
+unzip and run `wcm.exe`. It's a single self-contained exe, so no .NET install is needed.
+
+## Build from source
 
 ```powershell
 dotnet run --project src/Wcm                 # TUI
