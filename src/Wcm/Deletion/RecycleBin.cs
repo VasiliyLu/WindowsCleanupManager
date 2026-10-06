@@ -40,7 +40,7 @@ internal static partial class RecycleBin
             fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI | FOF_WANTNUKEWARNING
         };
         var rc = SHFileOperation(ref op);
-        if (op.fAnyOperationsAborted) return "операция прервана";
+        if (op.fAnyOperationsAborted) return "operation aborted";
         return rc == 0 ? null : $"SHFileOperation 0x{rc:X}";
     }
 }

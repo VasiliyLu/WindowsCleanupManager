@@ -55,14 +55,14 @@ public sealed class Deleter(RuleEngine rules, string? logPath = null)
     public string? Validate(CleanupItem item)
     {
         if (item.IsDocker) return null;
-        if (item.Node is { ContainsProtected: true }) return "внутри есть защищённые пути";
+        if (item.Node is { ContainsProtected: true }) return "contains protected paths";
         var block = rules.BlockReason(item.Target);
         if (block is not null) return block;
 
         var exists = item.Kind == ItemKind.File ? File.Exists(item.Target) : Directory.Exists(item.Target);
-        if (!exists) return "уже не существует";
+        if (!exists) return "no longer exists";
         if ((File.GetAttributes(item.Target) & FileAttributes.ReparsePoint) != 0 && item.Kind == ItemKind.FolderContents)
-            return "это ссылка (junction/symlink)";
+            return "it is a link (junction/symlink)";
         return null;
     }
 
@@ -94,7 +94,7 @@ public sealed class Deleter(RuleEngine rules, string? logPath = null)
         {
             var extra = errors.Count - MaxErrorsPerItem;
             errors.RemoveRange(MaxErrorsPerItem, extra);
-            errors.Add($"…и ещё {extra} ошибок");
+            errors.Add($"…and {extra} more errors");
         }
         return new DeleteOutcome(item, success, remaining, errors);
     }

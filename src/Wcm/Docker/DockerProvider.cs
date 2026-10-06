@@ -22,7 +22,7 @@ public sealed class DockerProvider
 
         using var p = new Process { StartInfo = psi };
         try { p.Start(); }
-        catch (System.ComponentModel.Win32Exception) { return new ProcessResult(-1, "", "docker.exe не найден"); }
+        catch (System.ComponentModel.Win32Exception) { return new ProcessResult(-1, "", "docker.exe not found"); }
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
@@ -36,20 +36,20 @@ public sealed class DockerProvider
         catch (OperationCanceledException)
         {
             try { p.Kill(entireProcessTree: true); } catch { }
-            return new ProcessResult(-1, "", ct.IsCancellationRequested ? "отменено" : "таймаут docker");
+            return new ProcessResult(-1, "", ct.IsCancellationRequested ? "cancelled" : "docker timed out");
         }
     }
 
     public async Task<(List<CleanupItem> Items, string? Error)> ListAsync(CancellationToken ct = default)
     {
         var info = await RunAsync("info --format \"{{.ServerVersion}}\"", TimeSpan.FromSeconds(15), ct).ConfigureAwait(false);
-        if (info.ExitCode != 0) return ([], "Docker недоступен: " + FirstLine(info.StdErr));
+        if (info.ExitCode != 0) return ([], "Docker unavailable: " + FirstLine(info.StdErr));
 
         var df = await RunAsync("system df -v --format \"{{json .}}\"", TimeSpan.FromMinutes(2), ct).ConfigureAwait(false);
         if (df.ExitCode != 0) return ([], "docker system df: " + FirstLine(df.StdErr));
 
         try { return (Parse(df.StdOut), null); }
-        catch (JsonException e) { return ([], "Не удалось разобрать вывод docker: " + e.Message); }
+        catch (JsonException e) { return ([], "Failed to parse docker output: " + e.Message); }
     }
 
     internal static List<CleanupItem> Parse(string json)
@@ -74,7 +74,7 @@ public sealed class DockerProvider
                 Display = dangling ? $"<none> {ShortId(id)}" : $"{repo}:{tag}",
                 Size = size,
                 Category = "docker",
-                Reason = (dangling ? "dangling-образ" : "образ не используется контейнерами") + $", создан {Str(img, "CreatedSince")}",
+                Reason = (dangling ? "dangling image" : "image not used by any container") + $", created {Str(img, "CreatedSince")}",
                 Source = ItemSource.Docker,
                 Safety = dangling ? Safety.Safe : Safety.Review,
                 Checked = dangling
@@ -92,7 +92,7 @@ public sealed class DockerProvider
                 Display = "volume " + name,
                 Size = ByteSize.TryParse(Str(vol, "Size"), out var s, decimalUnits: true) ? s : 0,
                 Category = "docker",
-                Reason = "том не подключён ни к одному контейнеру — может содержать данные!",
+                Reason = "volume not attached to any container — it may contain data!",
                 Source = ItemSource.Docker,
                 Safety = Safety.Review,
                 Checked = false
@@ -113,10 +113,10 @@ public sealed class DockerProvider
             {
                 Kind = ItemKind.DockerBuildCache,
                 Target = "builder-cache",
-                Display = $"docker build cache ({cacheCount} записей)",
+                Display = $"docker build cache ({cacheCount} entries)",
                 Size = cacheSize,
                 Category = "docker",
-                Reason = "неиспользуемый кэш сборки BuildKit",
+                Reason = "unused BuildKit build cache",
                 Source = ItemSource.Docker,
                 Safety = Safety.Safe,
                 Checked = true

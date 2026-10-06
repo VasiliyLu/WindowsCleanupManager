@@ -20,7 +20,7 @@ internal static class Dialogs
         var w = Term.Width;
         var rows = new List<Line> { Row(w, title, "\e[1;37;45m") };
         rows.AddRange(lines.Select(l => Row(w, l)));
-        rows.Add(Row(w, "любая клавиша — продолжить", "\e[2;30;47m"));
+        rows.Add(Row(w, "any key — continue", "\e[2;30;47m"));
         Term.Draw(Overlay(background, rows));
         Term.ReadKey();
     }
@@ -30,7 +30,7 @@ internal static class Dialogs
         var w = Term.Width;
         var rows = new List<Line> { Row(w, question, "\e[1;37;41m") };
         rows.AddRange(details.Select(d => Row(w, d)));
-        rows.Add(Row(w, "y — да,  n / Esc — нет", "\e[2;30;47m"));
+        rows.Add(Row(w, "y — yes,  n / Esc — no", "\e[2;30;47m"));
         Term.Draw(Overlay(background, rows));
         while (true)
         {
@@ -49,7 +49,7 @@ internal static class Dialogs
             var rows = new List<Line> { Row(w, title, "\e[1;37;45m") };
             for (var i = 0; i < options.Count; i++)
                 rows.Add(Row(w, $"{i + 1}. {options[i]}", i == selected ? "\e[30;46m" : Style.Footer));
-            rows.Add(Row(w, "↑↓ / цифра — выбор,  Enter — ок,  Esc — отмена", "\e[2;30;47m"));
+            rows.Add(Row(w, "↑↓ / digit — select,  Enter — ok,  Esc — cancel", "\e[2;30;47m"));
             Term.Draw(Overlay(background, rows));
 
             var k = Term.ReadKey();
@@ -83,7 +83,7 @@ internal static class Dialogs
             {
                 Row(w, title, "\e[1;37;45m"),
                 new Line(w, "\e[30;46m").Text(" " + visible).Fill(),
-                Row(w, hint ?? "Enter — ок,  Esc — отмена", "\e[2;30;47m")
+                Row(w, hint ?? "Enter — ok,  Esc — cancel", "\e[2;30;47m")
             };
             var f = Overlay(background, rows);
             f.Cursor = (f.Height - 2, 1 + pos - offset);

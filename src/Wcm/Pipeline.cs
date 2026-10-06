@@ -24,8 +24,8 @@ public sealed class Pipeline
     public bool AiEnabled { get; set; } = true;
 
     public string? AiUnavailableReason =>
-        !AiEnabled || !Config.Jev.Enabled ? "Jev выключен"
-        : string.IsNullOrWhiteSpace(Config.ApiKey) ? "нет ключа (OPENROUTER_API_KEY)"
+        !AiEnabled || !Config.Jev.Enabled ? "Jev is off"
+        : string.IsNullOrWhiteSpace(Config.ApiKey) ? "no API key (OPENROUTER_API_KEY)"
         : null;
 
     public async Task<ScanSession> ScanAsync(string path, CancellationToken ct)

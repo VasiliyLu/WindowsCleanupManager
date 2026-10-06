@@ -138,7 +138,7 @@ public sealed class JevPlanner(JevSettings settings)
             Size = size,
             Category = category,
             Confidence = deletable,
-            Reason = $"Jev: {category}, удаляемо с вероятностью {deletable:P0}" + (risky ? " — но категория рискованная" : ""),
+            Reason = $"Jev: {category}, deletable with probability {deletable:P0}" + (risky ? " — but the category is risky" : ""),
             Source = source,
             Safety = safe ? Safety.Safe : Safety.Review,
             Checked = safe,

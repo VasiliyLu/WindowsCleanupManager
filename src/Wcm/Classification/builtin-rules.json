@@ -1,8 +1,8 @@
 [
   // ---------- Protected: never suggested, never deleted ----------
   { "id": "sys-windows", "action": "protect", "match": "%SystemRoot%", "reason": "Windows" },
-  { "id": "sys-program-files", "action": "protect", "match": ["?:\\Program Files", "?:\\Program Files (x86)"], "reason": "установленные программы" },
-  { "id": "sys-programdata-ms", "action": "protect", "match": ["%ProgramData%\\Microsoft", "%ProgramData%\\Package Cache"], "reason": "системные данные" },
+  { "id": "sys-program-files", "action": "protect", "match": ["?:\\Program Files", "?:\\Program Files (x86)"], "reason": "installed programs" },
+  { "id": "sys-programdata-ms", "action": "protect", "match": ["%ProgramData%\\Microsoft", "%ProgramData%\\Package Cache"], "reason": "system data" },
   { "id": "sys-volume", "action": "protect", "match": ["?:\\System Volume Information", "?:\\$Recycle.Bin", "?:\\Recovery", "?:\\Boot", "?:\\EFI", "?:\\Config.Msi", "?:\\$WinREAgent"] },
   { "id": "sys-files", "action": "protect", "kind": "file", "match": ["?:\\pagefile.sys", "?:\\hiberfil.sys", "?:\\swapfile.sys", "?:\\bootmgr", "?:\\DumpStack.log*"] },
   { "id": "user-data", "action": "protect", "match": [
@@ -11,9 +11,9 @@
       "?:\\Users\\*\\.ssh", "?:\\Users\\*\\.gnupg", "?:\\Users\\*\\NTUSER*",
       "?:\\Users\\*\\AppData\\Roaming\\Microsoft\\Credentials", "?:\\Users\\*\\AppData\\Local\\Microsoft\\Credentials",
       "?:\\Users\\*\\AppData\\Roaming\\Microsoft\\Protect", "?:\\Users\\*\\AppData\\Local\\Microsoft\\WindowsApps"
-    ], "reason": "данные пользователя" },
-  { "id": "git", "action": "protect", "match": "**\\.git", "reason": "git-репозиторий" },
-  { "id": "docker-vhdx", "action": "protect", "match": "?:\\Users\\*\\AppData\\Local\\Docker\\wsl", "reason": "диск Docker — чистится через образы/тома" },
+    ], "reason": "user data" },
+  { "id": "git", "action": "protect", "match": "**\\.git", "reason": "git repository" },
+  { "id": "docker-vhdx", "action": "protect", "match": "?:\\Users\\*\\AppData\\Local\\Docker\\wsl", "reason": "Docker disk — clean it via images/volumes" },
 
   // ---------- Containers: look inside, never suggest/ask about them as a whole ----------
   { "id": "containers", "action": "container", "kind": "dir", "match": [
@@ -23,26 +23,26 @@
     ] },
 
   // ---------- Never suggest (manual marking in Browse still works) ----------
-  { "id": "vm-disks", "action": "never", "kind": "file", "match": ["**\\*.vhdx", "**\\*.vhd", "**\\*.vmdk", "**\\*.vdi"], "reason": "диски ВМ/WSL" },
-  { "id": "outlook", "action": "never", "match": "?:\\Users\\*\\AppData\\Local\\Microsoft\\Outlook", "reason": "почта Outlook" },
+  { "id": "vm-disks", "action": "never", "kind": "file", "match": ["**\\*.vhdx", "**\\*.vhd", "**\\*.vmdk", "**\\*.vdi"], "reason": "VM/WSL disks" },
+  { "id": "outlook", "action": "never", "match": "?:\\Users\\*\\AppData\\Local\\Microsoft\\Outlook", "reason": "Outlook mail" },
 
   // ---------- Windows ----------
-  { "id": "user-temp", "match": "?:\\Users\\*\\AppData\\Local\\Temp", "kind": "dir", "contents": true, "category": "temp", "safety": "safe", "reason": "временные файлы пользователя" },
-  { "id": "windows-temp", "match": "%SystemRoot%\\Temp", "kind": "dir", "contents": true, "allowInProtected": true, "category": "temp", "safety": "safe", "reason": "временные файлы Windows" },
-  { "id": "wu-download", "match": "%SystemRoot%\\SoftwareDistribution\\Download", "kind": "dir", "contents": true, "allowInProtected": true, "category": "installer", "safety": "safe", "reason": "скачанные обновления Windows" },
-  { "id": "delivery-optimization", "match": "%SystemRoot%\\ServiceProfiles\\NetworkService\\AppData\\Local\\Microsoft\\Windows\\DeliveryOptimization\\Cache", "kind": "dir", "contents": true, "allowInProtected": true, "category": "cache", "safety": "safe", "reason": "кэш оптимизации доставки" },
-  { "id": "windows-logs", "match": ["%SystemRoot%\\Logs\\CBS", "%SystemRoot%\\Logs\\DISM", "%SystemRoot%\\Panther"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "review", "reason": "логи обслуживания Windows" },
-  { "id": "windows-dumps", "match": ["%SystemRoot%\\Minidump", "%SystemRoot%\\LiveKernelReports"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "дампы падений" },
-  { "id": "windows-memory-dmp", "match": "%SystemRoot%\\MEMORY.DMP", "kind": "file", "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "полный дамп памяти" },
-  { "id": "wer", "match": ["%ProgramData%\\Microsoft\\Windows\\WER\\ReportArchive", "%ProgramData%\\Microsoft\\Windows\\WER\\ReportQueue", "?:\\Users\\*\\AppData\\Local\\Microsoft\\Windows\\WER"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "отчёты об ошибках" },
-  { "id": "patch-cache", "match": "%SystemRoot%\\Installer\\$PatchCache$", "kind": "dir", "allowInProtected": true, "category": "installer", "safety": "review", "reason": "кэш патчей MSI (может понадобиться для восстановления)" },
-  { "id": "windows-old", "match": ["?:\\Windows.old", "?:\\$WINDOWS.~BT", "?:\\$Windows.~WS"], "kind": "dir", "category": "installer", "safety": "review", "reason": "остатки предыдущей версии Windows (нужны права администратора)" },
-  { "id": "crash-dumps", "match": "?:\\Users\\*\\AppData\\Local\\CrashDumps", "kind": "dir", "contents": true, "category": "logs", "safety": "safe", "reason": "дампы падений приложений" },
-  { "id": "dmp-files", "match": "**\\*.dmp", "kind": "file", "category": "logs", "safety": "review", "reason": "файл дампа" },
-  { "id": "inetcache", "match": "?:\\Users\\*\\AppData\\Local\\Microsoft\\Windows\\INetCache", "kind": "dir", "contents": true, "category": "cache", "safety": "safe", "reason": "кэш IE/WebView" },
+  { "id": "user-temp", "match": "?:\\Users\\*\\AppData\\Local\\Temp", "kind": "dir", "contents": true, "category": "temp", "safety": "safe", "reason": "user temp files" },
+  { "id": "windows-temp", "match": "%SystemRoot%\\Temp", "kind": "dir", "contents": true, "allowInProtected": true, "category": "temp", "safety": "safe", "reason": "Windows temp files" },
+  { "id": "wu-download", "match": "%SystemRoot%\\SoftwareDistribution\\Download", "kind": "dir", "contents": true, "allowInProtected": true, "category": "installer", "safety": "safe", "reason": "downloaded Windows updates" },
+  { "id": "delivery-optimization", "match": "%SystemRoot%\\ServiceProfiles\\NetworkService\\AppData\\Local\\Microsoft\\Windows\\DeliveryOptimization\\Cache", "kind": "dir", "contents": true, "allowInProtected": true, "category": "cache", "safety": "safe", "reason": "Delivery Optimization cache" },
+  { "id": "windows-logs", "match": ["%SystemRoot%\\Logs\\CBS", "%SystemRoot%\\Logs\\DISM", "%SystemRoot%\\Panther"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "review", "reason": "Windows servicing logs" },
+  { "id": "windows-dumps", "match": ["%SystemRoot%\\Minidump", "%SystemRoot%\\LiveKernelReports"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "crash dumps" },
+  { "id": "windows-memory-dmp", "match": "%SystemRoot%\\MEMORY.DMP", "kind": "file", "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "full memory dump" },
+  { "id": "wer", "match": ["%ProgramData%\\Microsoft\\Windows\\WER\\ReportArchive", "%ProgramData%\\Microsoft\\Windows\\WER\\ReportQueue", "?:\\Users\\*\\AppData\\Local\\Microsoft\\Windows\\WER"], "kind": "dir", "contents": true, "allowInProtected": true, "category": "logs", "safety": "safe", "reason": "error reports" },
+  { "id": "patch-cache", "match": "%SystemRoot%\\Installer\\$PatchCache$", "kind": "dir", "allowInProtected": true, "category": "installer", "safety": "review", "reason": "MSI patch cache (may be needed for repair)" },
+  { "id": "windows-old", "match": ["?:\\Windows.old", "?:\\$WINDOWS.~BT", "?:\\$Windows.~WS"], "kind": "dir", "category": "installer", "safety": "review", "reason": "leftovers of the previous Windows version (requires admin rights)" },
+  { "id": "crash-dumps", "match": "?:\\Users\\*\\AppData\\Local\\CrashDumps", "kind": "dir", "contents": true, "category": "logs", "safety": "safe", "reason": "application crash dumps" },
+  { "id": "dmp-files", "match": "**\\*.dmp", "kind": "file", "category": "logs", "safety": "review", "reason": "dump file" },
+  { "id": "inetcache", "match": "?:\\Users\\*\\AppData\\Local\\Microsoft\\Windows\\INetCache", "kind": "dir", "contents": true, "category": "cache", "safety": "safe", "reason": "IE/WebView cache" },
 
   // ---------- Browsers ----------
-  { "id": "chromium-cache", "kind": "dir", "category": "cache", "safety": "safe", "reason": "кэш браузера", "match": [
+  { "id": "chromium-cache", "kind": "dir", "category": "cache", "safety": "safe", "reason": "browser cache", "match": [
       "?:\\Users\\*\\AppData\\Local\\Google\\Chrome\\User Data\\*\\Cache",
       "?:\\Users\\*\\AppData\\Local\\Google\\Chrome\\User Data\\*\\Code Cache",
       "?:\\Users\\*\\AppData\\Local\\Google\\Chrome\\User Data\\*\\Service Worker\\CacheStorage",
@@ -59,7 +59,7 @@
     ] },
 
   // ---------- Apps ----------
-  { "id": "electron-cache", "kind": "dir", "category": "cache", "safety": "safe", "reason": "кэш Electron-приложения", "match": [
+  { "id": "electron-cache", "kind": "dir", "category": "cache", "safety": "safe", "reason": "Electron app cache", "match": [
       "?:\\Users\\*\\AppData\\Roaming\\discord\\Cache", "?:\\Users\\*\\AppData\\Roaming\\discord\\Code Cache",
       "?:\\Users\\*\\AppData\\Roaming\\Slack\\Cache", "?:\\Users\\*\\AppData\\Roaming\\Slack\\Service Worker\\CacheStorage",
       "?:\\Users\\*\\AppData\\Roaming\\Microsoft\\Teams\\Cache", "?:\\Users\\*\\AppData\\Roaming\\Microsoft\\Teams\\Service Worker\\CacheStorage",
@@ -67,40 +67,40 @@
       "?:\\Users\\*\\AppData\\Roaming\\Code\\CachedExtensionVSIXs", "?:\\Users\\*\\AppData\\Roaming\\Code\\Service Worker\\CacheStorage",
       "?:\\Users\\*\\AppData\\Roaming\\Cursor\\Cache", "?:\\Users\\*\\AppData\\Roaming\\Cursor\\CachedData"
     ] },
-  { "id": "telegram-cache", "match": "?:\\Users\\*\\AppData\\Roaming\\Telegram Desktop\\tdata\\user_data", "kind": "dir", "category": "cache", "safety": "review", "reason": "медиа-кэш Telegram (скачается заново)" },
-  { "id": "gpu-shader-cache", "kind": "dir", "contents": true, "category": "cache", "safety": "safe", "reason": "кэш шейдеров GPU", "match": [
+  { "id": "telegram-cache", "match": "?:\\Users\\*\\AppData\\Roaming\\Telegram Desktop\\tdata\\user_data", "kind": "dir", "category": "cache", "safety": "review", "reason": "Telegram media cache (will be re-downloaded)" },
+  { "id": "gpu-shader-cache", "kind": "dir", "contents": true, "category": "cache", "safety": "safe", "reason": "GPU shader cache", "match": [
       "?:\\Users\\*\\AppData\\Local\\NVIDIA\\DXCache", "?:\\Users\\*\\AppData\\Local\\NVIDIA\\GLCache",
       "?:\\Users\\*\\AppData\\Local\\AMD\\DxCache", "?:\\Users\\*\\AppData\\Local\\AMD\\GLCache",
       "?:\\Users\\*\\AppData\\Local\\D3DSCache", "?:\\Users\\*\\AppData\\LocalLow\\NVIDIA\\PerDriverVersion\\DXCache"
     ] },
-  { "id": "nvidia-downloader", "match": "%ProgramData%\\NVIDIA Corporation\\Downloader", "kind": "dir", "contents": true, "category": "installer", "safety": "safe", "reason": "скачанные драйверы NVIDIA" },
-  { "id": "steam-downloading", "match": ["**\\steamapps\\downloading", "**\\steamapps\\shadercache"], "kind": "dir", "allowInProtected": true, "category": "cache", "safety": "review", "reason": "незавершённые загрузки/кэш шейдеров Steam" },
+  { "id": "nvidia-downloader", "match": "%ProgramData%\\NVIDIA Corporation\\Downloader", "kind": "dir", "contents": true, "category": "installer", "safety": "safe", "reason": "downloaded NVIDIA drivers" },
+  { "id": "steam-downloading", "match": ["**\\steamapps\\downloading", "**\\steamapps\\shadercache"], "kind": "dir", "allowInProtected": true, "category": "cache", "safety": "review", "reason": "Steam unfinished downloads/shader cache" },
 
   // ---------- Developer: project build outputs ----------
-  { "id": "node-modules", "match": "**\\node_modules", "kind": "dir", "when": { "siblingExists": "package.json", "olderThanDays": 30 }, "category": "build", "safety": "safe", "reason": "зависимости npm (npm install восстановит), проект не менялся 30+ дней" },
-  { "id": "dotnet-bin-obj", "match": ["**\\bin", "**\\obj"], "kind": "dir", "when": { "siblingExists": "*.csproj|*.fsproj|*.vbproj|*.vcxproj", "olderThanDays": 14 }, "category": "build", "safety": "safe", "reason": "выход сборки .NET/C++" },
-  { "id": "rust-target", "match": "**\\target", "kind": "dir", "when": { "siblingExists": "Cargo.toml" }, "category": "build", "safety": "safe", "reason": "выход сборки Rust (cargo build восстановит)" },
-  { "id": "maven-target", "match": "**\\target", "kind": "dir", "when": { "siblingExists": "pom.xml" }, "category": "build", "safety": "safe", "reason": "выход сборки Maven" },
-  { "id": "gradle-build", "match": ["**\\build", "**\\.gradle"], "kind": "dir", "when": { "siblingExists": "build.gradle|build.gradle.kts|settings.gradle" }, "category": "build", "safety": "safe", "reason": "выход сборки Gradle" },
-  { "id": "js-build-caches", "match": ["**\\.next", "**\\.nuxt", "**\\.angular", "**\\.parcel-cache", "**\\.turbo", "**\\.svelte-kit"], "kind": "dir", "when": { "siblingExists": "package.json" }, "category": "build", "safety": "safe", "reason": "кэш сборки JS-фреймворка" },
-  { "id": "py-caches", "match": ["**\\__pycache__", "**\\.pytest_cache", "**\\.mypy_cache", "**\\.ruff_cache", "**\\.tox"], "kind": "dir", "category": "build", "safety": "safe", "reason": "кэш Python-инструментов" },
-  { "id": "py-venv", "match": ["**\\.venv", "**\\venv"], "kind": "dir", "when": { "siblingExists": "pyproject.toml|requirements.txt|setup.py", "olderThanDays": 30 }, "category": "build", "safety": "review", "reason": "виртуальное окружение Python (пересоздаётся)" },
-  { "id": "unity-library", "match": ["**\\Library", "**\\Temp", "**\\Logs"], "kind": "dir", "when": { "siblingExists": "ProjectSettings" }, "category": "build", "safety": "review", "reason": "кэш Unity-проекта (пересоздаётся при открытии, долго)" },
-  { "id": "vcpkg-build", "match": ["**\\vcpkg\\buildtrees", "**\\vcpkg\\downloads", "**\\vcpkg\\packages"], "kind": "dir", "category": "build", "safety": "safe", "reason": "промежуточные файлы vcpkg" },
-  { "id": "vs-dir", "match": "**\\.vs", "kind": "dir", "when": { "siblingExists": "*.sln|*.slnx" }, "category": "cache", "safety": "review", "reason": "кэш Visual Studio (IntelliSense, история)" },
+  { "id": "node-modules", "match": "**\\node_modules", "kind": "dir", "when": { "siblingExists": "package.json", "olderThanDays": 30 }, "category": "build", "safety": "safe", "reason": "npm dependencies (npm install restores them), project untouched for 30+ days" },
+  { "id": "dotnet-bin-obj", "match": ["**\\bin", "**\\obj"], "kind": "dir", "when": { "siblingExists": "*.csproj|*.fsproj|*.vbproj|*.vcxproj", "olderThanDays": 14 }, "category": "build", "safety": "safe", "reason": ".NET/C++ build output" },
+  { "id": "rust-target", "match": "**\\target", "kind": "dir", "when": { "siblingExists": "Cargo.toml" }, "category": "build", "safety": "safe", "reason": "Rust build output (cargo build restores it)" },
+  { "id": "maven-target", "match": "**\\target", "kind": "dir", "when": { "siblingExists": "pom.xml" }, "category": "build", "safety": "safe", "reason": "Maven build output" },
+  { "id": "gradle-build", "match": ["**\\build", "**\\.gradle"], "kind": "dir", "when": { "siblingExists": "build.gradle|build.gradle.kts|settings.gradle" }, "category": "build", "safety": "safe", "reason": "Gradle build output" },
+  { "id": "js-build-caches", "match": ["**\\.next", "**\\.nuxt", "**\\.angular", "**\\.parcel-cache", "**\\.turbo", "**\\.svelte-kit"], "kind": "dir", "when": { "siblingExists": "package.json" }, "category": "build", "safety": "safe", "reason": "JS framework build cache" },
+  { "id": "py-caches", "match": ["**\\__pycache__", "**\\.pytest_cache", "**\\.mypy_cache", "**\\.ruff_cache", "**\\.tox"], "kind": "dir", "category": "build", "safety": "safe", "reason": "Python tooling cache" },
+  { "id": "py-venv", "match": ["**\\.venv", "**\\venv"], "kind": "dir", "when": { "siblingExists": "pyproject.toml|requirements.txt|setup.py", "olderThanDays": 30 }, "category": "build", "safety": "review", "reason": "Python virtual environment (can be recreated)" },
+  { "id": "unity-library", "match": ["**\\Library", "**\\Temp", "**\\Logs"], "kind": "dir", "when": { "siblingExists": "ProjectSettings" }, "category": "build", "safety": "review", "reason": "Unity project cache (rebuilt on open, slow)" },
+  { "id": "vcpkg-build", "match": ["**\\vcpkg\\buildtrees", "**\\vcpkg\\downloads", "**\\vcpkg\\packages"], "kind": "dir", "category": "build", "safety": "safe", "reason": "vcpkg intermediate files" },
+  { "id": "vs-dir", "match": "**\\.vs", "kind": "dir", "when": { "siblingExists": "*.sln|*.slnx" }, "category": "cache", "safety": "review", "reason": "Visual Studio cache (IntelliSense, history)" },
 
   // ---------- Developer: global package caches ----------
-  { "id": "nuget-http-cache", "match": ["?:\\Users\\*\\AppData\\Local\\NuGet\\v3-cache", "?:\\Users\\*\\AppData\\Local\\NuGet\\plugins-cache", "?:\\Users\\*\\AppData\\Local\\NuGet\\Cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "HTTP-кэш NuGet" },
-  { "id": "nuget-packages", "match": "?:\\Users\\*\\.nuget\\packages", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "глобальная папка пакетов NuGet (restore скачает заново)" },
-  { "id": "npm-cache", "match": ["?:\\Users\\*\\AppData\\Local\\npm-cache", "?:\\Users\\*\\AppData\\Roaming\\npm-cache", "?:\\Users\\*\\AppData\\Local\\Yarn\\Cache", "?:\\Users\\*\\AppData\\Local\\Yarn\\Berry\\cache", "?:\\Users\\*\\AppData\\Local\\bun\\install\\cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "кэш пакетов JS" },
-  { "id": "pnpm-store", "match": "?:\\Users\\*\\AppData\\Local\\pnpm\\store", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "хранилище pnpm (проекты используют hardlink'и)" },
-  { "id": "pip-cache", "match": ["?:\\Users\\*\\AppData\\Local\\pip\\cache", "?:\\Users\\*\\AppData\\Local\\uv\\cache", "?:\\Users\\*\\AppData\\Local\\pypoetry\\Cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "кэш пакетов Python" },
-  { "id": "cargo-cache", "match": ["?:\\Users\\*\\.cargo\\registry\\cache", "?:\\Users\\*\\.cargo\\registry\\src", "?:\\Users\\*\\.cargo\\git\\checkouts"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "кэш crates Cargo" },
-  { "id": "go-cache", "match": "?:\\Users\\*\\AppData\\Local\\go-build", "kind": "dir", "category": "build", "safety": "safe", "reason": "кэш сборки Go" },
-  { "id": "go-mod", "match": "?:\\Users\\*\\go\\pkg\\mod", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "кэш модулей Go" },
-  { "id": "gradle-caches", "match": ["?:\\Users\\*\\.gradle\\caches", "?:\\Users\\*\\.gradle\\wrapper\\dists"], "kind": "dir", "category": "package-cache", "safety": "review", "reason": "кэш Gradle" },
-  { "id": "maven-repo", "match": "?:\\Users\\*\\.m2\\repository", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "локальный репозиторий Maven" },
-  { "id": "jetbrains-caches", "match": ["?:\\Users\\*\\AppData\\Local\\JetBrains\\*\\caches", "?:\\Users\\*\\AppData\\Local\\JetBrains\\*\\index", "?:\\Users\\*\\AppData\\Local\\JetBrains\\Transient"], "kind": "dir", "category": "cache", "safety": "review", "reason": "кэши/индексы JetBrains IDE (переиндексация при запуске)" },
-  { "id": "vs-caches", "match": ["?:\\Users\\*\\AppData\\Local\\Microsoft\\VisualStudio\\*\\ComponentModelCache", "?:\\Users\\*\\AppData\\Local\\Temp\\VSFeedbackIntelliCodeLogs"], "kind": "dir", "category": "cache", "safety": "safe", "reason": "кэш Visual Studio" },
-  { "id": "huggingface-cache", "match": "?:\\Users\\*\\.cache\\huggingface", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "скачанные модели HuggingFace" }
+  { "id": "nuget-http-cache", "match": ["?:\\Users\\*\\AppData\\Local\\NuGet\\v3-cache", "?:\\Users\\*\\AppData\\Local\\NuGet\\plugins-cache", "?:\\Users\\*\\AppData\\Local\\NuGet\\Cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "NuGet HTTP cache" },
+  { "id": "nuget-packages", "match": "?:\\Users\\*\\.nuget\\packages", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "NuGet global packages folder (restore re-downloads it)" },
+  { "id": "npm-cache", "match": ["?:\\Users\\*\\AppData\\Local\\npm-cache", "?:\\Users\\*\\AppData\\Roaming\\npm-cache", "?:\\Users\\*\\AppData\\Local\\Yarn\\Cache", "?:\\Users\\*\\AppData\\Local\\Yarn\\Berry\\cache", "?:\\Users\\*\\AppData\\Local\\bun\\install\\cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "JS package cache" },
+  { "id": "pnpm-store", "match": "?:\\Users\\*\\AppData\\Local\\pnpm\\store", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "pnpm store (projects use hardlinks into it)" },
+  { "id": "pip-cache", "match": ["?:\\Users\\*\\AppData\\Local\\pip\\cache", "?:\\Users\\*\\AppData\\Local\\uv\\cache", "?:\\Users\\*\\AppData\\Local\\pypoetry\\Cache"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "Python package cache" },
+  { "id": "cargo-cache", "match": ["?:\\Users\\*\\.cargo\\registry\\cache", "?:\\Users\\*\\.cargo\\registry\\src", "?:\\Users\\*\\.cargo\\git\\checkouts"], "kind": "dir", "category": "package-cache", "safety": "safe", "reason": "Cargo crates cache" },
+  { "id": "go-cache", "match": "?:\\Users\\*\\AppData\\Local\\go-build", "kind": "dir", "category": "build", "safety": "safe", "reason": "Go build cache" },
+  { "id": "go-mod", "match": "?:\\Users\\*\\go\\pkg\\mod", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "Go module cache" },
+  { "id": "gradle-caches", "match": ["?:\\Users\\*\\.gradle\\caches", "?:\\Users\\*\\.gradle\\wrapper\\dists"], "kind": "dir", "category": "package-cache", "safety": "review", "reason": "Gradle cache" },
+  { "id": "maven-repo", "match": "?:\\Users\\*\\.m2\\repository", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "local Maven repository" },
+  { "id": "jetbrains-caches", "match": ["?:\\Users\\*\\AppData\\Local\\JetBrains\\*\\caches", "?:\\Users\\*\\AppData\\Local\\JetBrains\\*\\index", "?:\\Users\\*\\AppData\\Local\\JetBrains\\Transient"], "kind": "dir", "category": "cache", "safety": "review", "reason": "JetBrains IDE caches/indexes (reindexed on start)" },
+  { "id": "vs-caches", "match": ["?:\\Users\\*\\AppData\\Local\\Microsoft\\VisualStudio\\*\\ComponentModelCache", "?:\\Users\\*\\AppData\\Local\\Temp\\VSFeedbackIntelliCodeLogs"], "kind": "dir", "category": "cache", "safety": "safe", "reason": "Visual Studio cache" },
+  { "id": "huggingface-cache", "match": "?:\\Users\\*\\.cache\\huggingface", "kind": "dir", "category": "package-cache", "safety": "review", "reason": "downloaded HuggingFace models" }
 ]

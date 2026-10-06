@@ -103,7 +103,7 @@ public sealed class RuleEngine
     {
         var norm = Glob.Normalize(Path.GetFullPath(path));
         if (norm.Length <= 2 || Path.GetPathRoot(path)?.TrimEnd('\\').Equals(norm, StringComparison.OrdinalIgnoreCase) == true)
-            return "корень диска";
+            return "drive root";
 
         // Walk from the root down: find a protected ancestor, then look for an allowed exception below it
         var segments = norm.Split('\\');
@@ -118,9 +118,9 @@ public sealed class RuleEngine
 
             if (rule.Action == RuleAction.Protect && !inProtected) inProtected = true;
             else if (inProtected && rule.AllowInProtected && rule.Action == RuleAction.Suggest) return null;
-            else if (isLast && rule.Action == RuleAction.Container) return $"контейнер ({rule.Id})";
+            else if (isLast && rule.Action == RuleAction.Container) return $"container ({rule.Id})";
         }
 
-        return inProtected ? "защищённый путь" : null;
+        return inProtected ? "protected path" : null;
     }
 }

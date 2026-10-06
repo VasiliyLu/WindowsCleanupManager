@@ -98,12 +98,12 @@ internal sealed class BrowseScreen(ScanSession session, Pipeline pipeline, FsNod
 
         if (node.Mark == NodeMark.Protected || node.ContainsProtected)
         {
-            _status = "Защищённый путь (или содержит защищённые) — удалить нельзя.";
+            _status = "Protected path (or contains protected ones) — can't delete.";
             return;
         }
         if (pipeline.Rules.BlockReason(node.FullPath) is { } why)
         {
-            _status = $"Нельзя: {why}.";
+            _status = $"Not allowed: {why}.";
             return;
         }
 
@@ -114,7 +114,7 @@ internal sealed class BrowseScreen(ScanSession session, Pipeline pipeline, FsNod
             Display = node.FullPath,
             Size = node.Size,
             Category = "manual",
-            Reason = "отмечено вручную",
+            Reason = "checked manually",
             Source = ItemSource.Manual,
             Safety = Safety.Review,
             Checked = true,
@@ -135,7 +135,7 @@ internal sealed class BrowseScreen(ScanSession session, Pipeline pipeline, FsNod
     {
         var f = new Frame();
         var selection = session.EffectiveSelection();
-        f.Add(new Line(f.Width, Style.Header).Text($" {Fmt.MiddleTrim(_dir.FullPath, f.Width - 30)}").Right($"{ByteSize.Format(_dir.Size)}, {_dir.FileCount:N0} файлов ").Fill());
+        f.Add(new Line(f.Width, Style.Header).Text($" {Fmt.MiddleTrim(_dir.FullPath, f.Width - 30)}").Right($"{ByteSize.Format(_dir.Size)}, {_dir.FileCount:N0} files ").Fill());
 
         var listHeight = f.Height - 4;
         if (_selected < _top) _top = _selected;
@@ -166,18 +166,18 @@ internal sealed class BrowseScreen(ScanSession session, Pipeline pipeline, FsNod
             var name = n.IsDir ? n.Name + "\\" : n.Name;
             line.Text(name, n.Mark == NodeMark.Protected ? Style.Dim : n.IsDir ? Style.Blue + Style.Bold : "");
             if (item is not null) line.Text($"  {item.Category}", Style.Gray);
-            else if (inside.TryGetValue(n, out var sub)) line.Text($"  предложено внутри: {ByteSize.Format(sub)}", Style.Gray);
-            if (n.AccessDenied) line.Text("  (нет доступа)", Style.Red);
+            else if (inside.TryGetValue(n, out var sub)) line.Text($"  suggested inside: {ByteSize.Format(sub)}", Style.Gray);
+            if (n.AccessDenied) line.Text("  (access denied)", Style.Red);
             f.Add(line.Fill());
         }
 
         if (_dir.SmallFilesCount > 0 && f.Remaining > 3)
-            f.Add(new Line(f.Width).Text("     " + Fmt.Size(_dir.SmallFilesSize) + "  ").Text($"{_dir.SmallFilesCount:N0} мелких файлов", Style.Gray));
+            f.Add(new Line(f.Width).Text("     " + Fmt.Size(_dir.SmallFilesSize) + "  ").Text($"{_dir.SmallFilesCount:N0} small files", Style.Gray));
 
         f.FillTo(2);
-        f.Add(new Line(f.Width).Text($"  Отмечено: {selection.Count} ({ByteSize.Format(selection.Sum(i => i.Size))})", Style.Bold)
+        f.Add(new Line(f.Width).Text($"  Checked: {selection.Count} ({ByteSize.Format(selection.Sum(i => i.Size))})", Style.Bold)
             .Text("   " + (_status ?? ""), Style.Yellow));
-        f.Add(new Line(f.Width, Style.Footer).Text(" ↑↓ выбор  Enter/→ открыть  ←/Backspace вверх  Space отметить  Del корзина  Shift+Del/X навсегда  Q к списку").Fill());
+        f.Add(new Line(f.Width, Style.Footer).Text(" ↑↓ select  Enter/→ open  ←/Backspace up  Space check  Del recycle  Shift+Del/X permanently  Q to list").Fill());
         return f;
     }
 }

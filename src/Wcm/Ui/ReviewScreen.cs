@@ -75,7 +75,7 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
                 case ConsoleKey.Q:
                 case ConsoleKey.Escape:
                     if (session.Items.Any(i => i.Checked) && session.Root is not null
-                        && !Dialogs.Confirm(Render, "Вернуться в меню? Результаты сканирования будут потеряны.")) break;
+                        && !Dialogs.Confirm(Render, "Back to menu? Scan results will be lost.")) break;
                     return;
             }
         }
@@ -98,10 +98,10 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
         var total = session.Items.Where(i => !session.IsCovered(i)).Sum(i => i.Size);
 
         f.Add(new Line(f.Width, Style.Header)
-            .Text($" {Fmt.MiddleTrim(session.Label, f.Width / 2)}: {session.Items.Count} предложений, {ByteSize.Format(total)}")
+            .Text($" {Fmt.MiddleTrim(session.Label, f.Width / 2)}: {session.Items.Count} suggestions, {ByteSize.Format(total)}")
             .Right(Summary() + " ").Fill());
 
-        f.Add(new Line(f.Width, Style.Bold).Text("     Размер  Тип      Источник  Категория      Увер.  Путь"));
+        f.Add(new Line(f.Width, Style.Bold).Text("       Size  Type     Source    Category       Conf.  Path"));
 
         var listHeight = ListHeight(f.Height);
         if (_selected < _top) _top = _selected;
@@ -110,17 +110,17 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
         for (var r = _top; r < Math.Min(_rows.Count, _top + listHeight); r++)
             f.Add(RenderRow(_rows[r], r == _selected, f.Width));
 
-        if (_rows.Count == 0) f.Add("  Ничего не найдено. B — открыть дерево и отметить вручную.", Style.Gray);
+        if (_rows.Count == 0) f.Add("  Nothing found. B — open the tree and check items manually.", Style.Gray);
 
         f.FillTo(5);
         var cur = _rows.Count > 0 ? _rows[_selected] : null;
         f.Add(new Line(f.Width, Style.Dim).Text(new string('─', f.Width)));
         f.Add(cur is null ? "" : "  " + cur.Reason, cur?.Safety == Safety.Review ? Style.Yellow : Style.Green);
         f.Add(cur is null ? "" : "  " + (cur.IsDocker ? cur.Target : cur.Display) + (cur.RuleId is { } id ? $"  [{id}]" : ""), Style.Gray);
-        f.Add(new Line(f.Width).Text($"  Отмечено: {selection.Count} ({ByteSize.Format(selection.Sum(i => i.Size))})", Style.Bold)
+        f.Add(new Line(f.Width).Text($"  Checked: {selection.Count} ({ByteSize.Format(selection.Sum(i => i.Size))})", Style.Bold)
             .Text("   " + (_status ?? session.JevNote ?? session.DockerError ?? ""), Style.Yellow));
         f.Add(new Line(f.Width, Style.Footer)
-            .Text(" Space отм.  A все safe  U снять  S сорт.  Enter/B дерево  R правило  N не предлагать  Del корзина  Shift+Del/X навсегда  Q назад")
+            .Text(" Space check  A all safe  U uncheck  S sort  Enter/B tree  R rule  N never suggest  Del recycle  Shift+Del/X permanently  Q back")
             .Fill());
         return f;
     }
@@ -128,9 +128,9 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
     private string Summary()
     {
         var parts = new List<string>();
-        if (session.Root is not null) parts.Add($"скан {session.ScanTime:mm\\:ss}, ошибок {session.ScanErrors}");
-        if (session.Jev is { } j) parts.Add($"Jev {j.Done} запр. ${j.Cost:0.0000}");
-        if (session.JevPlan is { CacheHits: > 0 } p) parts.Add($"кэш {p.CacheHits}");
+        if (session.Root is not null) parts.Add($"scan {session.ScanTime:mm\\:ss}, {session.ScanErrors} errors");
+        if (session.Jev is { } j) parts.Add($"Jev {j.Done} req. ${j.Cost:0.0000}");
+        if (session.JevPlan is { CacheHits: > 0 } p) parts.Add($"cache {p.CacheHits}");
         return string.Join(" | ", parts);
     }
 
@@ -162,30 +162,30 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
 
     private static string SourceLabel(ItemSource s) => s switch
     {
-        ItemSource.Rule => "правило",
-        ItemSource.Cache => "jev/кэш",
+        ItemSource.Rule => "rule",
+        ItemSource.Cache => "jev/cache",
         ItemSource.Jev => "jev",
-        ItemSource.Manual => "вручную",
+        ItemSource.Manual => "manual",
         ItemSource.Docker => "docker",
         _ => ""
     };
 
     private void SaveAsRule(CleanupItem item)
     {
-        if (item.Node is not { } node) { _status = "Для Docker-элементов правила не поддерживаются."; return; }
+        if (item.Node is not { } node) { _status = "Rules are not supported for Docker items."; return; }
 
         var exact = StateBuilder.Anonymize(node.FullPath);
         var parentName = node.Parent is { Parent: not null } p ? p.Name : null;
         var options = new List<string> { exact, $"**\\{node.Name}" };
         if (parentName is not null) options.Add($"**\\{parentName}\\{node.Name}");
 
-        var idx = Dialogs.Choose(Render, "Шаблон пути для правила:", options);
+        var idx = Dialogs.Choose(Render, "Path pattern for the rule:", options);
         if (idx < 0) return;
-        var pattern = Dialogs.Prompt(Render, "Шаблон (** — любая глубина, * — часть имени):", options[idx]);
+        var pattern = Dialogs.Prompt(Render, "Pattern (** — any depth, * — part of a name):", options[idx]);
         if (string.IsNullOrWhiteSpace(pattern)) return;
 
-        var action = Dialogs.Choose(Render, "Что делать с совпадениями?",
-            ["Предлагать удалить и отмечать (safe)", "Предлагать, но не отмечать (review)", "Никогда не предлагать"]);
+        var action = Dialogs.Choose(Render, "What to do with matches?",
+            ["Suggest and check (safe)", "Suggest, don't check (review)", "Never suggest"]);
         if (action < 0) return;
 
         var rule = new Rule
@@ -197,23 +197,23 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
             Category = item.Category,
             Safety = action == 0 ? Safety.Safe : Safety.Review,
             Contents = item.Kind == ItemKind.FolderContents,
-            Reason = action == 2 ? "правило пользователя: не предлагать" : "правило пользователя" + (item.Source == ItemSource.Jev ? $" (по ответу Jev: {item.Category})" : "")
+            Reason = action == 2 ? "user rule: never suggest" : "user rule" + (item.Source == ItemSource.Jev ? $" (from Jev answer: {item.Category})" : "")
         };
 
         try { pipeline.Rules.AddUserRule(rule); }
-        catch (Exception e) { _status = "Не удалось сохранить правило: " + e.Message; return; }
+        catch (Exception e) { _status = "Failed to save rule: " + e.Message; return; }
 
         if (rule.Action == RuleAction.Never)
         {
             session.Remove(item);
             node.Mark = NodeMark.Known;
         }
-        _status = $"Правило {rule.Id} сохранено в {AppPaths.UserRules}";
+        _status = $"Rule {rule.Id} saved to {AppPaths.UserRules}";
     }
 
     private void NeverSuggest(CleanupItem item)
     {
-        if (item.Node is not { } node) { session.Remove(item); _status = "Скрыто до следующего опроса Docker."; return; }
+        if (item.Node is not { } node) { session.Remove(item); _status = "Hidden until the next Docker query."; return; }
 
         var rule = new Rule
         {
@@ -221,13 +221,13 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
             Match = [StateBuilder.Anonymize(node.FullPath)],
             Kind = node.IsDir ? RuleKind.Dir : RuleKind.File,
             Action = RuleAction.Never,
-            Reason = "пользователь отказался"
+            Reason = "declined by user"
         };
         try { pipeline.Rules.AddUserRule(rule); }
-        catch (Exception e) { _status = "Не удалось сохранить правило: " + e.Message; return; }
+        catch (Exception e) { _status = "Failed to save rule: " + e.Message; return; }
 
         session.Remove(item);
         node.Mark = NodeMark.Known;
-        _status = $"Больше не будет предлагаться: {node.FullPath}";
+        _status = $"Won't be suggested again: {node.FullPath}";
     }
 }

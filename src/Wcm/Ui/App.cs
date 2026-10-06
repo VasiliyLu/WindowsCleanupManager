@@ -64,7 +64,7 @@ internal sealed class App
                         var frac = d.TotalSize > 0 ? (double)used / d.TotalSize : 0;
                         line.Text(e.Title.PadRight(26), Style.Bold)
                             .Text(Fmt.Bar(frac, 20) + " ", frac > 0.9 ? Style.Red : frac > 0.75 ? Style.Yellow : Style.Green)
-                            .Text($"{ByteSize.Format(used),9} / {ByteSize.Format(d.TotalSize),-9}  свободно {ByteSize.Format(d.AvailableFreeSpace)}");
+                            .Text($"{ByteSize.Format(used),9} / {ByteSize.Format(d.TotalSize),-9}  free {ByteSize.Format(d.AvailableFreeSpace)}");
                     }
                     else
                     {
@@ -76,7 +76,7 @@ internal sealed class App
 
                 f.FillTo(2);
                 f.Add(status ?? "", Style.Yellow);
-                f.Add(new Line(f.Width, Style.Footer).Text(" ↑↓ выбор   Enter открыть   I Jev вкл/выкл   R перечитать конфиг   Q выход").Fill());
+                f.Add(new Line(f.Width, Style.Footer).Text(" ↑↓ select   Enter open   I Jev on/off   R reload config   Q quit").Fill());
                 return f;
             }
 
@@ -92,15 +92,15 @@ internal sealed class App
                 case ConsoleKey.Enter:
                 case ConsoleKey.S:
                     try { entries[selected].Run(); }
-                    catch (Exception e) { Dialogs.Message(Render, "Ошибка", e.Message); }
+                    catch (Exception e) { Dialogs.Message(Render, "Error", e.Message); }
                     break;
                 case ConsoleKey.I:
                     _aiEnabled = !_aiEnabled;
                     _pipeline.AiEnabled = _aiEnabled;
                     break;
                 case ConsoleKey.R:
-                    try { Reload(); status = "Конфигурация и правила перечитаны."; }
-                    catch (Exception e) { status = "Ошибка в конфиге/правилах: " + e.Message; }
+                    try { Reload(); status = "Config and rules reloaded."; }
+                    catch (Exception e) { status = "Error in config/rules: " + e.Message; }
                     break;
                 case ConsoleKey.Q:
                 case ConsoleKey.Escape:
@@ -112,7 +112,7 @@ internal sealed class App
     }
 
     private string AiStatus() =>
-        _pipeline.AiUnavailableReason is { } r ? $"Jev: {r}" : $"Jev: {_config.Jev.Model}, лимит {_config.Jev.MaxCallsPerScan} запр./${_config.Jev.MaxCostPerScan}";
+        _pipeline.AiUnavailableReason is { } r ? $"Jev: {r}" : $"Jev: {_config.Jev.Model}, limit {_config.Jev.MaxCallsPerScan} req./${_config.Jev.MaxCostPerScan}";
 
     private List<MenuEntry> BuildMenu()
     {
@@ -124,19 +124,19 @@ internal sealed class App
             list.Add(new MenuEntry(d.Name + label, "", () => ScanFlow(d.RootDirectory.FullName, isDrive: true), d));
         }
 
-        list.Add(new MenuEntry("Папка…", "сканировать произвольную папку", () =>
+        list.Add(new MenuEntry("Folder…", "scan any folder", () =>
         {
-            var path = Dialogs.Prompt(() => new Frame(), "Путь к папке для сканирования:", Environment.CurrentDirectory);
+            var path = Dialogs.Prompt(() => new Frame(), "Folder to scan:", Environment.CurrentDirectory);
             if (string.IsNullOrWhiteSpace(path)) return;
             path = Environment.ExpandEnvironmentVariables(path.Trim().Trim('"'));
-            if (!Directory.Exists(path)) { Dialogs.Message(() => new Frame(), "Ошибка", $"Папка не найдена: {path}"); return; }
+            if (!Directory.Exists(path)) { Dialogs.Message(() => new Frame(), "Error", $"Folder not found: {path}"); return; }
             ScanFlow(path, isDrive: false);
         }));
         if (_config.Docker.Enabled)
-            list.Add(new MenuEntry("Docker", "только образы, тома и build cache", DockerFlow));
-        list.Add(new MenuEntry("Правила", AppPaths.UserRules, () => OpenInEditor(AppPaths.UserRules, "[]")));
-        list.Add(new MenuEntry("Настройки", AppPaths.Config, () => OpenInEditor(AppPaths.Config, null)));
-        list.Add(new MenuEntry("Журнал удалений", AppPaths.DeletionLog, () => OpenInEditor(AppPaths.DeletionLog, "")));
+            list.Add(new MenuEntry("Docker", "images, volumes and build cache only", DockerFlow));
+        list.Add(new MenuEntry("Rules", AppPaths.UserRules, () => OpenInEditor(AppPaths.UserRules, "[]")));
+        list.Add(new MenuEntry("Settings", AppPaths.Config, () => OpenInEditor(AppPaths.Config, null)));
+        list.Add(new MenuEntry("Deletion log", AppPaths.DeletionLog, () => OpenInEditor(AppPaths.DeletionLog, "")));
         return list;
     }
 
@@ -150,7 +150,7 @@ internal sealed class App
         }
         Process.Start(new ProcessStartInfo("notepad.exe", $"\"{path}\"") { UseShellExecute = true })?.WaitForExit();
         try { Reload(); }
-        catch (Exception e) { Dialogs.Message(() => new Frame(), "Ошибка в файле", e.Message); }
+        catch (Exception e) { Dialogs.Message(() => new Frame(), "Error in file", e.Message); }
     }
 
     private void ScanFlow(string path, bool isDrive)
@@ -164,17 +164,17 @@ internal sealed class App
             var pr = p.Progress;
             var secs = Math.Max(0.1, pr.Elapsed.Elapsed.TotalSeconds);
             var f = new Frame();
-            f.Add(new Line(f.Width, Style.Header).Text($" Сканирование {path}").Fill());
+            f.Add(new Line(f.Width, Style.Header).Text($" Scanning {path}").Fill());
             f.Blank();
-            f.Add($"  Папок:     {pr.DirCount:N0}");
-            f.Add($"  Файлов:    {pr.FileCount:N0}   ({pr.FileCount / secs:N0}/с)");
-            f.Add($"  Объём:     {ByteSize.Format(pr.ByteCount)}");
-            f.Add($"  Ошибок:    {pr.ErrorCount:N0}", pr.ErrorCount > 0 ? Style.Yellow : "");
-            f.Add($"  Время:     {pr.Elapsed.Elapsed:mm\\:ss}");
+            f.Add($"  Folders:   {pr.DirCount:N0}");
+            f.Add($"  Files:     {pr.FileCount:N0}   ({pr.FileCount / secs:N0}/s)");
+            f.Add($"  Size:      {ByteSize.Format(pr.ByteCount)}");
+            f.Add($"  Errors:    {pr.ErrorCount:N0}", pr.ErrorCount > 0 ? Style.Yellow : "");
+            f.Add($"  Time:      {pr.Elapsed.Elapsed:mm\\:ss}");
             f.Blank();
             f.Add("  " + Fmt.MiddleTrim(pr.CurrentPath, f.Width - 4), Style.Gray);
             f.FillTo(1);
-            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — отменить").Fill());
+            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — cancel").Fill());
             return f;
         }
 
@@ -188,14 +188,14 @@ internal sealed class App
         if (task.IsCanceled || cts.IsCancellationRequested) return;
         if (task.IsFaulted)
         {
-            Dialogs.Message(Render, "Ошибка сканирования", task.Exception!.GetBaseException().Message);
+            Dialogs.Message(Render, "Scan error", task.Exception!.GetBaseException().Message);
             return;
         }
 
         var session = task.Result;
 
         if (isDrive && _config.Docker.IncludeInDriveScan && _config.Docker.Enabled)
-            RunWithSpinner("Опрос Docker…", ct => _pipeline.AddDockerAsync(session, ct));
+            RunWithSpinner("Querying Docker…", ct => _pipeline.AddDockerAsync(session, ct));
 
         RunJev(session);
         new ReviewScreen(session, _pipeline).Run();
@@ -204,7 +204,7 @@ internal sealed class App
     private void DockerFlow()
     {
         var session = new ScanSession { Label = "Docker" };
-        RunWithSpinner("Опрос Docker…", ct => _pipeline.AddDockerAsync(session, ct));
+        RunWithSpinner("Querying Docker…", ct => _pipeline.AddDockerAsync(session, ct));
         if (session.DockerError is not null && session.Items.Count == 0)
         {
             Dialogs.Message(() => new Frame(), "Docker", session.DockerError);
@@ -219,7 +219,7 @@ internal sealed class App
         if (plan is null || plan.ToAsk.Count == 0) return;
         if (_pipeline.AiUnavailableReason is { } why)
         {
-            session.JevNote = $"{why}: {plan.ToAsk.Count} крупных папок без правил остались без анализа";
+            session.JevNote = $"{why}: {plan.ToAsk.Count} large folders without rules were not analyzed";
             return;
         }
 
@@ -228,21 +228,21 @@ internal sealed class App
             Frame Bg()
             {
                 var f = new Frame();
-                f.Add(new Line(f.Width, Style.Header).Text(" Анализ Jev").Fill());
+                f.Add(new Line(f.Width, Style.Header).Text(" Jev analysis").Fill());
                 f.Blank();
-                f.Add($"  Крупные папки/файлы без правил: {plan.ToAsk.Count}" + (plan.SkippedByLimit > 0 ? $" (+{plan.SkippedByLimit} за пределами лимита)" : ""));
-                f.Add($"  Из кэша решений: {plan.CacheHits}");
+                f.Add($"  Large folders/files without rules: {plan.ToAsk.Count}" + (plan.SkippedByLimit > 0 ? $" (+{plan.SkippedByLimit} over the limit)" : ""));
+                f.Add($"  From decision cache: {plan.CacheHits}");
                 f.Blank();
                 foreach (var c in plan.ToAsk.Take(Math.Max(0, f.Remaining - 6)))
                     f.Add(new Line(f.Width).Text("  " + Fmt.Size(c.EffectiveSize) + "  ").Text(Fmt.MiddleTrim(c.Path, f.Width - 16), Style.Gray));
                 return f;
             }
 
-            var ok = Dialogs.Confirm(Bg, $"Отправить {plan.ToAsk.Count} запросов в Jev? Оценка ≈ ${plan.EstimatedCost():0.0000}, лимит ${_config.Jev.MaxCostPerScan}",
-                "Будут отправлены пути (профиль заменён на %USERPROFILE%), размеры и имена крупнейших вложенных элементов.");
+            var ok = Dialogs.Confirm(Bg, $"Send {plan.ToAsk.Count} requests to Jev? Estimate ≈ ${plan.EstimatedCost():0.0000}, limit ${_config.Jev.MaxCostPerScan}",
+                "Paths (profile replaced with %USERPROFILE%), sizes and names of the largest nested entries will be sent.");
             if (!ok)
             {
-                session.JevNote = "анализ Jev пропущен";
+                session.JevNote = "Jev analysis skipped";
                 return;
             }
         }
@@ -253,16 +253,16 @@ internal sealed class App
         while (!task.IsCompleted)
         {
             var f = new Frame();
-            f.Add(new Line(f.Width, Style.Header).Text(" Анализ Jev").Fill());
+            f.Add(new Line(f.Width, Style.Header).Text(" Jev analysis").Fill());
             f.Blank();
             var done = progress.Done + progress.Failed + progress.SkippedByBudget;
             f.Add("  " + Fmt.Bar(progress.Total == 0 ? 1 : (double)done / progress.Total, 40) + $"  {done}/{progress.Total}");
-            f.Add($"  Стоимость: ${progress.Cost:0.00000}   ошибок: {progress.Failed}   пропущено по бюджету: {progress.SkippedByBudget}");
+            f.Add($"  Cost: ${progress.Cost:0.00000}   errors: {progress.Failed}   skipped by budget: {progress.SkippedByBudget}");
             if (progress.LastError is { } err) f.Add("  " + err, Style.Red);
             f.Blank();
             f.Add("  " + Fmt.MiddleTrim(progress.Current, f.Width - 4), Style.Gray);
             f.FillTo(1);
-            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — прекратить запросы").Fill());
+            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — stop requests").Fill());
             Term.Draw(f);
             if (Term.TryReadKey() is { Key: ConsoleKey.Escape }) cts.Cancel();
             Thread.Sleep(150);
@@ -283,7 +283,7 @@ internal sealed class App
             f.Blank();
             f.Add($"  {frames[i++ % frames.Length]} {title}");
             f.FillTo(1);
-            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — пропустить").Fill());
+            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — skip").Fill());
             Term.Draw(f);
             if (Term.TryReadKey() is { Key: ConsoleKey.Escape }) cts.Cancel();
             Thread.Sleep(100);

@@ -32,9 +32,9 @@ public sealed class CleanupItem
 
     public string KindLabel => Kind switch
     {
-        ItemKind.Folder => "папка",
-        ItemKind.FolderContents => "содерж.",
-        ItemKind.File => "файл",
+        ItemKind.Folder => "folder",
+        ItemKind.FolderContents => "contents",
+        ItemKind.File => "file",
         ItemKind.DockerImage => "image",
         ItemKind.DockerVolume => "volume",
         ItemKind.DockerBuildCache => "build$",

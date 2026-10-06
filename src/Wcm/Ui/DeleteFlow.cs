@@ -13,7 +13,7 @@ internal static class DeleteFlow
         var items = session.EffectiveSelection();
         if (items.Count == 0)
         {
-            Dialogs.Message(background, "Ничего не отмечено", "Отметьте элементы пробелом.");
+            Dialogs.Message(background, "Nothing checked", "Check items with Space.");
             return;
         }
 
@@ -21,7 +21,7 @@ internal static class DeleteFlow
         var blocked = items.Select(i => (Item: i, Why: deleter.Validate(i))).Where(x => x.Why is not null).ToList();
         if (blocked.Count > 0)
         {
-            Dialogs.Message(background, $"{blocked.Count} элемент(ов) будут пропущены",
+            Dialogs.Message(background, $"{blocked.Count} item(s) will be skipped",
                 blocked.Take(5).Select(b => $"{Fmt.MiddleTrim(b.Item.Display, 80)} — {b.Why}").ToArray());
             items = items.Except(blocked.Select(b => b.Item)).ToList();
             if (items.Count == 0) return;
@@ -37,13 +37,13 @@ internal static class DeleteFlow
         while (!task.IsCompleted)
         {
             var f = new Frame();
-            f.Add(new Line(f.Width, Style.Header).Text(permanent ? " Удаление навсегда" : " Удаление в корзину").Fill());
+            f.Add(new Line(f.Width, Style.Header).Text(permanent ? " Deleting permanently" : " Moving to Recycle Bin").Fill());
             f.Blank();
             f.Add("  " + Fmt.Bar((double)done / items.Count, 40) + $"  {done}/{items.Count}");
             f.Blank();
             f.Add("  " + Fmt.MiddleTrim(current, f.Width - 4), Style.Gray);
             f.FillTo(1);
-            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — остановить после текущего элемента").Fill());
+            f.Add(new Line(f.Width, Style.Footer).Text(" Esc — stop after the current item").Fill());
             Term.Draw(f);
             if (Term.TryReadKey() is { Key: ConsoleKey.Escape }) cts.Cancel();
             Thread.Sleep(150);
@@ -51,7 +51,7 @@ internal static class DeleteFlow
 
         if (task.IsFaulted)
         {
-            Dialogs.Message(background, "Ошибка удаления", task.Exception!.GetBaseException().Message);
+            Dialogs.Message(background, "Deletion error", task.Exception!.GetBaseException().Message);
             return;
         }
 
@@ -70,7 +70,7 @@ internal static class DeleteFlow
         {
             var f = new Frame();
             f.Add(new Line(f.Width, permanent ? "\e[1;37;41m" : Style.Header)
-                .Text($" Будет удалено {(permanent ? "НАВСЕГДА" : "в корзину")}: {items.Count} элементов, {ByteSize.Format(total)}").Fill());
+                .Text($" To delete {(permanent ? "PERMANENTLY" : "to Recycle Bin")}: {items.Count} items, {ByteSize.Format(total)}").Fill());
             f.Blank();
             var room = Math.Max(1, f.Height - 9);
             foreach (var i in items.OrderByDescending(i => i.Size).Take(room))
@@ -79,15 +79,15 @@ internal static class DeleteFlow
                 f.Add(new Line(f.Width).Text("  " + Fmt.Size(i.Size) + "  ").Text(i.KindLabel.PadRight(9))
                     .Text(Fmt.MiddleTrim(i.Display, f.Width - 26), warn ? Style.Yellow : ""));
             }
-            if (items.Count > room) f.Add($"  …и ещё {items.Count - room}", Style.Gray);
+            if (items.Count > room) f.Add($"  …and {items.Count - room} more", Style.Gray);
             return f;
         }
 
         var details = new List<string>();
-        if (risky > 0) details.Add($"⚠ {risky} элемент(ов) требуют проверки (review / вручную) — выделены жёлтым.");
-        if (volumes > 0) details.Add($"⚠ {volumes} Docker volume — данные в них будут потеряны безвозвратно.");
-        if (items.Any(i => i.IsDocker) && !permanent) details.Add("Docker-объекты удаляются сразу, корзина к ним не применяется.");
-        return Dialogs.Confirm(Bg, permanent ? "Удалить навсегда? Восстановить будет нельзя." : "Переместить в корзину?", details.ToArray());
+        if (risky > 0) details.Add($"⚠ {risky} item(s) need review (review / manual) — highlighted in yellow.");
+        if (volumes > 0) details.Add($"⚠ {volumes} Docker volume(s) — their data will be lost for good.");
+        if (items.Any(i => i.IsDocker) && !permanent) details.Add("Docker objects are deleted immediately, the Recycle Bin doesn't apply to them.");
+        return Dialogs.Confirm(Bg, permanent ? "Delete permanently? This can't be undone." : "Move to Recycle Bin?", details.ToArray());
     }
 
     private static void Apply(ScanSession session, DeleteReport report)
@@ -129,16 +129,16 @@ internal static class DeleteFlow
     {
         var lines = new List<string>
         {
-            $"Успешно: {report.Succeeded}, с ошибками: {report.Failed}.",
+            $"Succeeded: {report.Succeeded}, failed: {report.Failed}.",
             permanent
-                ? $"Освобождено на дисках: {ByteSize.Format(report.FreedByDrives)}"
-                : $"Перемещено в корзину: {ByteSize.Format(report.Outcomes.Where(o => o.Success && !o.Item.IsDocker).Sum(o => o.Item.Size))}. Место освободится после очистки корзины."
+                ? $"Freed on drives: {ByteSize.Format(report.FreedByDrives)}"
+                : $"Moved to Recycle Bin: {ByteSize.Format(report.Outcomes.Where(o => o.Success && !o.Item.IsDocker).Sum(o => o.Item.Size))}. Space is freed once the Recycle Bin is emptied."
         };
         foreach (var o in report.Outcomes.Where(o => !o.Success).Take(6))
-            lines.Add($"✗ {Fmt.MiddleTrim(o.Item.Display, 60)}: {o.Errors.FirstOrDefault() ?? "частично"}");
+            lines.Add($"✗ {Fmt.MiddleTrim(o.Item.Display, 60)}: {o.Errors.FirstOrDefault() ?? "partially"}");
         if (report.DockerTouched)
-            lines.Add("Docker: место освобождено внутри vhdx, но сам файл может не уменьшиться — для сжатия: wsl --shutdown, затем Optimize-VHD или diskpart compact vdisk.");
-        lines.Add($"Журнал: {AppPaths.DeletionLog}");
-        Dialogs.Message(() => new Frame(), "Готово", lines.ToArray());
+            lines.Add("Docker: space was freed inside the vhdx, but the file itself may not shrink — to compact it: wsl --shutdown, then Optimize-VHD or diskpart compact vdisk.");
+        lines.Add($"Log: {AppPaths.DeletionLog}");
+        Dialogs.Message(() => new Frame(), "Done", lines.ToArray());
     }
 }
