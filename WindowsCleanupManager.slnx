@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Wcm/Wcm.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Wcm.Tests/Wcm.Tests.csproj" />
+  </Folder>
+</Solution>
