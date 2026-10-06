@@ -60,3 +60,7 @@ Deletion log: `%APPDATA%\Wcm\deletions.log`.
 
 Docker: space is freed inside `docker_data.vhdx`, but the file itself may not shrink —
 run `wsl --shutdown`, then `Optimize-VHD` / `diskpart compact vdisk`.
+
+## License
+
+[MIT](LICENSE)
