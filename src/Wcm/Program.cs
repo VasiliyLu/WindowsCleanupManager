@@ -10,7 +10,16 @@ using Wcm.Ui;
 Console.OutputEncoding = Encoding.UTF8;
 
 var root = new RootCommand("Windows Cleanup Manager — ncdu-like disk cleanup with rules and Jev. Starts the TUI when run without arguments.");
-root.SetAction(_ => new App(AppConfig.LoadOrCreate()).Run());
+root.SetAction(_ =>
+{
+    // The TUI needs a real console; installers and scripts get help instead of a crash
+    if (Console.IsInputRedirected || Console.IsOutputRedirected)
+    {
+        Console.Error.WriteLine("wcm: the TUI needs an interactive terminal. Use `wcm scan <path>` for headless mode.");
+        return root.Parse("--help").Invoke();
+    }
+    return new App(AppConfig.LoadOrCreate()).Run();
+});
 
 // Headless scan: prints suggestions, never deletes
 var pathArg = new Argument<string>("path") { Description = "Drive or folder, e.g. C:\\" };
