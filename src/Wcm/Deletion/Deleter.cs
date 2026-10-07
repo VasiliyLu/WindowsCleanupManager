@@ -11,7 +11,6 @@ public sealed class DeleteReport
 {
     public List<DeleteOutcome> Outcomes { get; } = [];
     public long FreedByDrives { get; set; }
-    public bool DockerTouched { get; set; }
     public int Succeeded => Outcomes.Count(o => o.Success);
     public int Failed => Outcomes.Count(o => !o.Success);
 }
@@ -34,7 +33,6 @@ public sealed class Deleter(RuleEngine rules, string? logPath = null)
             DeleteOutcome outcome;
             if (item.IsDocker)
             {
-                report.DockerTouched = true;
                 var r = await DockerProvider.DeleteAsync(item, ct).ConfigureAwait(false);
                 outcome = new DeleteOutcome(item, r.ExitCode == 0, 0, r.ExitCode == 0 ? [] : [r.StdErr.Trim()]);
             }

@@ -50,11 +50,11 @@ internal sealed class BrowseScreen(ScanSession session, Pipeline pipeline, FsNod
 
                 case ConsoleKey.Delete when k.Modifiers.HasFlag(ConsoleModifiers.Shift):
                 case ConsoleKey.X:
-                    DeleteFlow.Run(session, pipeline.Rules, permanent: true, () => Render(Rows()));
+                    DeleteFlow.Run(session, pipeline.Rules, permanent: true, pipeline.Config.Docker.OfferCompact, () => Render(Rows()));
                     break;
                 case ConsoleKey.Delete:
                 case ConsoleKey.D:
-                    DeleteFlow.Run(session, pipeline.Rules, permanent: false, () => Render(Rows()));
+                    DeleteFlow.Run(session, pipeline.Rules, permanent: false, pipeline.Config.Docker.OfferCompact, () => Render(Rows()));
                     break;
 
                 case ConsoleKey.Q:

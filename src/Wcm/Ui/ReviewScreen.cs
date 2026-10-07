@@ -65,11 +65,11 @@ internal sealed class ReviewScreen(ScanSession session, Pipeline pipeline)
 
                 case ConsoleKey.Delete when k.Modifiers.HasFlag(ConsoleModifiers.Shift):
                 case ConsoleKey.X:
-                    DeleteFlow.Run(session, pipeline.Rules, permanent: true, Render);
+                    DeleteFlow.Run(session, pipeline.Rules, permanent: true, pipeline.Config.Docker.OfferCompact, Render);
                     break;
                 case ConsoleKey.Delete:
                 case ConsoleKey.D:
-                    DeleteFlow.Run(session, pipeline.Rules, permanent: false, Render);
+                    DeleteFlow.Run(session, pipeline.Rules, permanent: false, pipeline.Config.Docker.OfferCompact, Render);
                     break;
 
                 case ConsoleKey.Q:
