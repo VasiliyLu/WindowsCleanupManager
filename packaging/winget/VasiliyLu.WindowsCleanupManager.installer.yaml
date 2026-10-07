@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
 
 PackageIdentifier: VasiliyLu.WindowsCleanupManager
-PackageVersion: 0.1.0
+PackageVersion: 0.1.1
 InstallerType: zip
 NestedInstallerType: portable
 NestedInstallerFiles:
@@ -9,13 +9,13 @@ NestedInstallerFiles:
   PortableCommandAlias: wcm
 Commands:
 - wcm
-ReleaseDate: 2026-10-06
+ReleaseDate: 2026-10-07
 Installers:
 - Architecture: x64
-  InstallerUrl: https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.0/wcm-0.1.0-win-x64.zip
-  InstallerSha256: D6297AED96EACD02BC429644DEB3D28DB3B0E04E4DE5B40EB49BBCAD9866A968
+  InstallerUrl: https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.1/wcm-0.1.1-win-x64.zip
+  InstallerSha256: E173B8ECFE1D3B66A063D48A1D9184499B7700D60C5483E954A305652C52411E
 - Architecture: arm64
-  InstallerUrl: https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.0/wcm-0.1.0-win-arm64.zip
-  InstallerSha256: 53126EC8A410BC915F8E4A47DB1319ECADA4CA46791170A2775391CC332160F8
+  InstallerUrl: https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.1/wcm-0.1.1-win-arm64.zip
+  InstallerSha256: 000422299D4DF3A64726C834A1D0328638293C7F022A0617A61BA54F0F8C842E
 ManifestType: installer
 ManifestVersion: 1.12.0
