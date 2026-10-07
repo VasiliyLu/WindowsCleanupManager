@@ -23,7 +23,16 @@ Windows Update leftovers, crash dumps, unused Docker images. You review, check, 
 
 ## Install
 
-Download `wcm-<version>-win-x64.zip` (or `win-arm64`) from the [latest release](https://github.com/VasiliyLu/WindowsCleanupManager/releases/latest),
+```powershell
+# Scoop
+scoop bucket add wcm https://github.com/VasiliyLu/WindowsCleanupManager
+scoop install wcm/wcm
+
+# winget
+winget install VasiliyLu.WindowsCleanupManager
+```
+
+Or download `wcm-<version>-win-x64.zip` (or `win-arm64`) from the [latest release](https://github.com/VasiliyLu/WindowsCleanupManager/releases/latest),
 unzip and run `wcm.exe`. It's a single self-contained exe, so no .NET install is needed.
 
 ## Build from source

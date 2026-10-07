@@ -48,3 +48,54 @@ jobs:
           $flags = @('--title', $tag, '--generate-notes', '--verify-tag')
           if ($tag -match '-') { $flags += '--prerelease' }
           gh release create $tag (Get-ChildItem dist/*).FullName @flags
+
+  # Stable releases only: bump the Scoop bucket and send a PR to winget-pkgs
+  packages:
+    needs: release
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Update Scoop manifest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $base = "https://github.com/${{ github.repository }}/releases/download/v$version"
+          $sums = @{}
+          gh release download "v$version" -p SHA256SUMS.txt -O - | ForEach-Object {
+            $hash, $name = $_ -split '\s+', 2
+            $sums[$name] = $hash
+          }
+          $m = Get-Content bucket/wcm.json -Raw | ConvertFrom-Json
+          $m.version = $version
+          foreach ($arch in @{ '64bit' = 'win-x64'; 'arm64' = 'win-arm64' }.GetEnumerator()) {
+            $zip = "wcm-$version-$($arch.Value).zip"
+            $m.architecture.($arch.Key).url = "$base/$zip"
+            $m.architecture.($arch.Key).hash = $sums[$zip]
+          }
+          $m | ConvertTo-Json -Depth 10 | Set-Content bucket/wcm.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add bucket/wcm.json
+          git commit -m "Scoop: update wcm to $version"
+          git push
+
+      - name: Submit to winget
+        shell: pwsh
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          # Needs a classic PAT with public_repo scope; skipped until the secret is set
+          if (-not $env:WINGET_TOKEN) { Write-Host 'WINGET_TOKEN not set, skipping'; exit 0 }
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $base = "https://github.com/${{ github.repository }}/releases/download/v$version"
+          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          ./wingetcreate.exe update VasiliyLu.WindowsCleanupManager --version $version `
+            --urls "$base/wcm-$version-win-x64.zip|x64" "$base/wcm-$version-win-arm64.zip|arm64" `
+            --release-notes-url "https://github.com/${{ github.repository }}/releases/tag/v$version" `
+            --submit --token $env:WINGET_TOKEN
