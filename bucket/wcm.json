@@ -1,16 +1,16 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ncdu-like disk cleanup TUI for Windows with safe rules, optional AI classification and Docker cleanup",
   "homepage": "https://github.com/VasiliyLu/WindowsCleanupManager",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.0/wcm-0.1.0-win-x64.zip",
-      "hash": "d6297aed96eacd02bc429644deb3d28db3b0e04e4de5b40eb49bbcad9866a968"
+      "url": "https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.1/wcm-0.1.1-win-x64.zip",
+      "hash": "e173b8ecfe1d3b66a063d48a1d9184499b7700d60c5483e954a305652c52411e"
     },
     "arm64": {
-      "url": "https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.0/wcm-0.1.0-win-arm64.zip",
-      "hash": "53126ec8a410bc915f8e4a47db1319ecada4ca46791170a2775391cc332160f8"
+      "url": "https://github.com/VasiliyLu/WindowsCleanupManager/releases/download/v0.1.1/wcm-0.1.1-win-arm64.zip",
+      "hash": "000422299d4df3a64726c834a1d0328638293c7f022a0617a61ba54f0f8c842e"
     }
   },
   "bin": "wcm.exe",
