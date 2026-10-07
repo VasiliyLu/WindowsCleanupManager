@@ -133,7 +133,13 @@ internal sealed class App
             ScanFlow(path, isDrive: false);
         }));
         if (_config.Docker.Enabled)
+        {
             list.Add(new MenuEntry("Docker", "images, volumes and build cache only", DockerFlow));
+            var disks = Docker.VhdxCompactor.FindDisks();
+            if (disks.Count > 0)
+                list.Add(new MenuEntry("Compact Docker disk", $"vhdx {ByteSize.Format(disks.Sum(d => new FileInfo(d).Length))}, give freed space back to Windows",
+                    () => CompactFlow.Run(() => new Frame(), "Compact the Docker disk?")));
+        }
         list.Add(new MenuEntry("Rules", AppPaths.UserRules, () => OpenInEditor(AppPaths.UserRules, "[]")));
         list.Add(new MenuEntry("Settings", AppPaths.Config, () => OpenInEditor(AppPaths.Config, null)));
         list.Add(new MenuEntry("Deletion log", AppPaths.DeletionLog, () => OpenInEditor(AppPaths.DeletionLog, "")));

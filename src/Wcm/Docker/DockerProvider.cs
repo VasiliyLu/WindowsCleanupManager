@@ -9,9 +9,12 @@ public sealed record ProcessResult(int ExitCode, string StdOut, string StdErr);
 /// <summary>Docker Desktop via docker.exe: images without containers, unused volumes, build cache.</summary>
 public sealed class DockerProvider
 {
-    public static async Task<ProcessResult> RunAsync(string args, TimeSpan timeout, CancellationToken ct = default)
+    public static Task<ProcessResult> RunAsync(string args, TimeSpan timeout, CancellationToken ct = default) =>
+        RunAsync("docker", args, timeout, ct);
+
+    public static async Task<ProcessResult> RunAsync(string exe, string args, TimeSpan timeout, CancellationToken ct = default)
     {
-        var psi = new ProcessStartInfo("docker", args)
+        var psi = new ProcessStartInfo(exe, args)
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -22,7 +25,7 @@ public sealed class DockerProvider
 
         using var p = new Process { StartInfo = psi };
         try { p.Start(); }
-        catch (System.ComponentModel.Win32Exception) { return new ProcessResult(-1, "", "docker.exe not found"); }
+        catch (System.ComponentModel.Win32Exception) { return new ProcessResult(-1, "", $"{exe}.exe not found"); }
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
@@ -36,7 +39,7 @@ public sealed class DockerProvider
         catch (OperationCanceledException)
         {
             try { p.Kill(entireProcessTree: true); } catch { }
-            return new ProcessResult(-1, "", ct.IsCancellationRequested ? "cancelled" : "docker timed out");
+            return new ProcessResult(-1, "", ct.IsCancellationRequested ? "cancelled" : $"{exe} timed out");
         }
     }
 
@@ -142,5 +145,5 @@ public sealed class DockerProvider
 
     private static string ShortId(string id) => id.StartsWith("sha256:") ? id[7..19] : id.Length > 12 ? id[..12] : id;
 
-    private static string FirstLine(string s) => s.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "";
+    internal static string FirstLine(string s) => s.Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "";
 }

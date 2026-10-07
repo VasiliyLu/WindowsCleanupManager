@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Wcm;
 using Wcm.Classification;
+using Wcm.Docker;
 using Wcm.Model;
 using Wcm.Storage;
 using Wcm.Ui;
@@ -108,5 +109,26 @@ rulesCmd.SetAction(_ =>
     return 0;
 });
 root.Subcommands.Add(rulesCmd);
+
+var compactYes = new Option<bool>("--yes", "-y") { Description = "Don't ask for confirmation" };
+var compactCmd = new Command("docker-compact", "Compact the Docker Desktop disk (vhdx): stops Docker and WSL, runs diskpart as admin") { compactYes };
+compactCmd.SetAction(async (parse, ct) =>
+{
+    var disks = VhdxCompactor.FindDisks();
+    if (disks.Count == 0) { Console.Error.WriteLine("Docker disk (vhdx) not found"); return 1; }
+    foreach (var d in disks) Console.WriteLine($"{ByteSize.Format(new FileInfo(d).Length),9}  {d}");
+    if (!parse.GetValue(compactYes))
+    {
+        Console.Error.Write("Docker Desktop and all WSL distros will be stopped. Compact now? [y/N] ");
+        if (Console.ReadLine()?.Trim().Equals("y", StringComparison.OrdinalIgnoreCase) != true) return 1;
+    }
+
+    var progress = new Progress<string>(s => Console.Error.WriteLine(s));
+    var r = await new VhdxCompactor(AppPaths.DeletionLog).CompactAsync(progress, ct);
+    foreach (var d in r.Disks) Console.WriteLine($"{Path.GetFileName(d.Path)}: {ByteSize.Format(d.Before)} -> {ByteSize.Format(d.After)}, freed {ByteSize.Format(d.Freed)}");
+    foreach (var e in r.Errors) Console.Error.WriteLine("Error: " + e);
+    return r.Errors.Count == 0 ? 0 : 1;
+});
+root.Subcommands.Add(compactCmd);
 
 return await root.Parse(args).InvokeAsync();

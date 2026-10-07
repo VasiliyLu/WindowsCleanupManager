@@ -8,7 +8,7 @@ namespace Wcm.Ui;
 /// <summary>Confirm → delete with progress → report → update the session.</summary>
 internal static class DeleteFlow
 {
-    public static void Run(ScanSession session, RuleEngine rules, bool permanent, Func<Frame> background)
+    public static void Run(ScanSession session, RuleEngine rules, bool permanent, bool offerCompact, Func<Frame> background)
     {
         var items = session.EffectiveSelection();
         if (items.Count == 0)
@@ -58,6 +58,9 @@ internal static class DeleteFlow
         var report = task.Result;
         Apply(session, report);
         ShowReport(report, permanent);
+
+        if (offerCompact && report.Outcomes.Any(o => o.Success && o.Item.IsDocker))
+            CompactFlow.Run(() => new Frame(), "Compact the Docker disk now to give the freed space back to Windows?");
     }
 
     private static bool Confirm(List<CleanupItem> items, bool permanent)
@@ -136,8 +139,6 @@ internal static class DeleteFlow
         };
         foreach (var o in report.Outcomes.Where(o => !o.Success).Take(6))
             lines.Add($"✗ {Fmt.MiddleTrim(o.Item.Display, 60)}: {o.Errors.FirstOrDefault() ?? "partially"}");
-        if (report.DockerTouched)
-            lines.Add("Docker: space was freed inside the vhdx, but the file itself may not shrink — to compact it: wsl --shutdown, then Optimize-VHD or diskpart compact vdisk.");
         lines.Add($"Log: {AppPaths.DeletionLog}");
         Dialogs.Message(() => new Frame(), "Done", lines.ToArray());
     }

@@ -79,6 +79,8 @@ public sealed class DockerSettings
 {
     public bool Enabled { get; set; } = true;
     public bool IncludeInDriveScan { get; set; } = true;
+    /// <summary>Offer to compact the Docker vhdx after Docker objects were deleted.</summary>
+    public bool OfferCompact { get; set; } = true;
 }
 
 public sealed class AppConfig

@@ -17,7 +17,7 @@ Windows Update leftovers, crash dumps, unused Docker images. You review, check, 
 - **Safe by design**: Windows, Program Files, your documents, `.git` folders and VM disks are protected and re-checked right before anything is deleted.
   Recycle Bin by default, and every deletion is logged.
 - **Optional AI classification** of large unknown folders with the [Jev](https://openrouter.ai/labs/jev) model. It has a hard per-scan budget (default $0.05), asks before sending anything, anonymizes your profile path and caches answers.
-- **Docker cleanup**: unused images, dangling volumes, BuildKit cache.
+- **Docker cleanup**: unused images, dangling volumes, BuildKit cache, then compacts `docker_data.vhdx` so the space actually goes back to Windows.
 - **Your own rules**: press `R` on any suggestion to make it permanent, or `N` to never see it again.
 - **Headless mode** (`wcm scan C:\ --json out.json`) for scripting; it never deletes.
 
@@ -89,8 +89,11 @@ In the list, `R` turns any suggestion into a permanent rule, `N` means "never su
 
 Deletion log: `%APPDATA%\Wcm\deletions.log`.
 
-Docker: space is freed inside `docker_data.vhdx`, but the file itself may not shrink —
-run `wsl --shutdown`, then `Optimize-VHD` / `diskpart compact vdisk`.
+Docker: deleting images/volumes frees space inside `docker_data.vhdx`, but the file itself doesn't shrink.
+After a Docker cleanup wcm offers to compact it (turn off with `docker.offerCompact: false`); you can also run
+**Compact Docker disk** from the menu or `wcm docker-compact [-y]`. Compaction stops Docker Desktop and all WSL distros
+(`wsl --shutdown`), runs `diskpart compact vdisk` (UAC prompt), and starts Docker Desktop again if it was running.
+Results are logged to `deletions.log`.
 
 ## Releases
 
